@@ -16,3 +16,29 @@
 - 👤 [Explore the creator's projects](https://omgithub.com/PixelRush16).
 - 🌍 [Create with OMGithub](https://omgithub.com).
 <!-- omgithub:readme:end -->
+
+## Metro Rush
+
+A polished three-lane 3D endless runner set on a sunset city subway line. Dodge trains, jump barriers, roll under gates, and collect coins while the pace builds.
+
+### Play
+
+```bash
+npm install
+npm run dev
+```
+
+Open the printed local URL. To build the static site:
+
+```bash
+npm run build
+npm run preview
+```
+
+### Controls
+
+- **Desktop:** `←` / `→` or `A` / `D` to switch lanes, `↑` / `W` / `Space` to jump, `↓` / `S` to roll, `Esc` / `P` to pause.
+- **Touch:** swipe left, right, up, or down, or use the four on-screen buttons.
+- **Audio:** use the speaker button in the HUD to mute or unmute the procedural soundtrack and effects.
+
+Best scores are stored locally in the browser. The layout respects mobile safe areas and switches to larger touch targets on coarse pointers.

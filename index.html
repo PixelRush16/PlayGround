@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#152238" />
+    <meta name="description" content="Metro Rush — a fast, three-lane 3D subway endless runner." />
+    <title>Metro Rush — 3-Lane Endless Runner</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23152238'/%3E%3Cpath d='M14 21h36v20c0 5-4 8-8 8H22c-4 0-8-3-8-8V21Z' fill='%23ff6b35'/%3E%3Crect x='20' y='27' width='10' height='9' rx='2' fill='%23fff2df'/%3E%3Crect x='34' y='27' width='10' height='9' rx='2' fill='%23fff2df'/%3E%3Ccircle cx='22' cy='54' r='4' fill='%23152238'/%3E%3Ccircle cx='42' cy='54' r='4' fill='%23152238'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene" aria-label="Metro Rush 3D game"></canvas>
+      <div class="scene-wash" aria-hidden="true"></div>
+
+      <section id="hud" aria-label="Game statistics" hidden>
+        <div class="hud-left">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 36 36" fill="none">
+              <path d="M7 9h22v14c0 3.5-2.7 6-6 6H13c-3.3 0-6-2.5-6-6V9Z" fill="currentColor"/>
+              <path d="M11 13h5.5v5H11v-5Zm8.5 0H25v5h-5.5v-5Z" fill="#152238"/>
+              <circle cx="13" cy="29.5" r="2.5" fill="currentColor"/>
+              <circle cx="23" cy="29.5" r="2.5" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="score-block">
+            <span class="eyebrow">SCORE</span>
+            <span id="score" class="score-value">000000</span>
+          </div>
+          <div class="distance-block">
+            <span class="eyebrow">DISTANCE</span>
+            <span class="distance-value"><span id="distance">0</span><small>m</small></span>
+          </div>
+        </div>
+
+        <div class="speed-pill" aria-label="Speed">
+          <div class="speed-label"><span>PACE</span><b id="speedMult">x1.0</b></div>
+          <div class="speed-bar"><i id="speedFill"></i></div>
+        </div>
+
+        <div class="hud-right">
+          <div class="coin-pill" aria-label="Coins collected">
+            <span class="coin-icon" aria-hidden="true"></span>
+            <b id="coinCount">0</b>
+          </div>
+          <div class="best-pill">
+            <span class="eyebrow">BEST</span>
+            <b id="bestScore">000000</b>
+          </div>
+          <button class="icon-button" id="soundButton" type="button" aria-label="Mute sound" title="Mute sound">
+            <svg class="sound-on" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 9h4l5-4v14l-5-4H4V9Z" fill="currentColor"/>
+              <path d="M16 8.5c1.7 1.8 1.7 5.2 0 7M18.8 6c3 3 3 9 0 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <svg class="sound-off" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 9h4l5-4v14l-5-4H4V9Z" fill="currentColor"/>
+              <path d="m16 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="icon-button" id="pauseButton" type="button" aria-label="Pause game" title="Pause game">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <div id="laneMeter" class="lane-meter" hidden aria-hidden="true">
+        <span class="lane-label">LANE</span>
+        <div class="lane-dots"><i></i><i></i><i></i></div>
+      </div>
+
+      <div id="powerUp" class="power-up" hidden>
+        <span class="power-icon">✦</span>
+        <div><b>COIN MAGNET</b><small id="powerTime">8s</small></div>
+      </div>
+
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+      <section id="startScreen" class="screen start-screen">
+        <div class="intro-copy">
+          <div class="kicker"><span></span> CITY LINE 07 · NO BRAKES</div>
+          <h1 class="logo" aria-label="Metro Rush">
+            <span class="logo-top">METRO</span>
+            <span class="logo-bottom">RUSH<span class="logo-dot">.</span></span>
+          </h1>
+          <p class="tagline">Three lanes. One way out.<br /> Outrun the express, pocket the coins,<br class="wide-only" /> and own the city.</p>
+          <div class="start-actions">
+            <button id="playButton" class="play-button" type="button" aria-label="Play">
+              <span class="play-label">PLAY</span>
+              <span class="play-arrow" aria-hidden="true">→</span>
+            </button>
+            <div class="best-badge">
+              <span class="eyebrow">PERSONAL BEST</span>
+              <b id="startBest">000000</b>
+            </div>
+          </div>
+          <div class="control-hints">
+            <div class="hint"><span class="keys"><kbd>←</kbd><kbd>→</kbd></span><span>Switch lane</span></div>
+            <div class="hint"><span class="keys"><kbd>↑</kbd><kbd>SPACE</kbd></span><span>Jump</span></div>
+            <div class="hint"><span class="keys"><kbd>↓</kbd></span><span>Roll</span></div>
+            <div class="hint touch-hint"><span class="keys"><kbd>SWIPE</kbd></span><span>On mobile</span></div>
+          </div>
+        </div>
+
+        <div class="intro-side" aria-hidden="true">
+          <div class="route-card">
+            <div class="route-head"><span>EXPRESS</span><b>07</b></div>
+            <div class="route-track"><i></i><i></i><i></i><span class="route-runner"></span></div>
+            <div class="route-note">3-LANE ENDLESS RUNNER</div>
+          </div>
+          <div class="scroll-note"><span></span>PRACTICE MAKES PERFECT</div>
+        </div>
+
+        <div class="intro-footer">
+          <span>© 2026 METRO RUSH</span>
+          <span class="footer-center">BUILT FOR THE DAILY COMMUTE</span>
+          <button id="howButton" class="text-button" type="button">HOW TO PLAY</button>
+        </div>
+      </section>
+
+      <section id="howScreen" class="screen modal-screen" hidden aria-labelledby="howTitle">
+        <div class="modal-card how-card">
+          <button class="close-button" id="howClose" type="button" aria-label="Close how to play">×</button>
+          <span class="kicker"><span></span> SURVIVAL GUIDE</span>
+          <h2 id="howTitle">OWN THE LINE.</h2>
+          <div class="how-grid">
+            <div class="how-item"><span class="how-key">← →</span><h3>DODGE</h3><p>Switch between three lanes. Trains hit hard; barriers can be cleared.</p></div>
+            <div class="how-item"><span class="how-key">↑</span><h3>JUMP</h3><p>Clear low barriers and snag high coin arcs. You can't jump over a train.</p></div>
+            <div class="how-item"><span class="how-key">↓</span><h3>ROLL</h3><p>Slide under hanging signs and gates. Time it late for extra style.</p></div>
+            <div class="how-item"><span class="how-key">◈</span><h3>COLLECT</h3><p>Coins build your score. Grab a magnet to sweep every lane for 8 seconds.</p></div>
+          </div>
+          <div class="how-touch">On touch screens, swipe in any direction — or use the four on-screen buttons.</div>
+          <button class="play-button compact" id="howPlay" type="button"><span class="play-label">START RUN</span><span class="play-arrow">→</span></button>
+        </div>
+      </section>
+
+      <section id="gameOverScreen" class="screen modal-screen" hidden aria-labelledby="gameOverTitle">
+        <div class="modal-card gameover-card">
+          <span class="kicker danger"><span></span> LINE INTERRUPTED</span>
+          <h2 id="gameOverTitle">WIPEOUT.</h2>
+          <p class="gameover-sub">The city waits for no one. Try that again?</p>
+          <div class="result-grid">
+            <div class="result-main"><span class="eyebrow">FINAL SCORE</span><b id="finalScore">000000</b><em id="newBest" hidden>NEW PERSONAL BEST</em></div>
+            <div class="result-side">
+              <div><span>DISTANCE</span><b id="finalDistance">0m</b></div>
+              <div><span>COINS</span><b id="finalCoins">0</b></div>
+              <div><span>BEST</span><b id="finalBest">000000</b></div>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button id="retryButton" class="play-button" type="button" aria-label="Restart">
+              <span class="play-label">RUN IT BACK</span><span class="play-arrow">↻</span>
+            </button>
+            <button id="homeButton" class="ghost-button" type="button">HOME</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="pauseScreen" class="screen modal-screen" hidden aria-labelledby="pauseTitle">
+        <div class="modal-card pause-card">
+          <span class="kicker"><span></span> HOLD THE LINE</span>
+          <h2 id="pauseTitle">PAUSED.</h2>
+          <p class="gameover-sub">Catch your breath. The express is still coming.</p>
+          <div class="pause-stats"><div><span>SCORE</span><b id="pauseScore">000000</b></div><div><span>DISTANCE</span><b id="pauseDistance">0m</b></div></div>
+          <div class="modal-actions">
+            <button id="resumeButton" class="play-button" type="button" aria-label="Resume">
+              <span class="play-label">RESUME</span><span class="play-arrow">→</span>
+            </button>
+            <button id="quitButton" class="ghost-button" type="button">QUIT</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="touch-controls" id="touchControls" hidden aria-label="Touch controls">
+        <div class="touch-cluster">
+          <button class="touch-button" data-action="left" type="button" aria-label="Move left">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="touch-button" data-action="right" type="button" aria-label="Move right">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="touch-cluster">
+          <button class="touch-button" data-action="roll" type="button" aria-label="Roll">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 9 7 7 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="touch-button" data-action="jump" type="button" aria-label="Jump">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 15 7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="webglFallback" class="webgl-fallback" hidden>
+        <h2>THIS LINE IS CLOSED.</h2>
+        <p>Metro Rush needs WebGL. Try a recent browser with hardware acceleration enabled.</p>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
