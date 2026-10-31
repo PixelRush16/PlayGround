@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#050817" />
+<title>Shell Strikers — Rocket Soccer with Kart Chaos</title>
+<meta name="description" content="Shell Strikers is a 3D rocket-powered soccer game with Mario Kart style items. Drift, boost, and blast your way to victory." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23eaf6ff'/%3E%3Cpath d='M32 14l12 9-4.6 14H24.6L20 23z' fill='%23081020'/%3E%3Ccircle cx='32' cy='32' r='30' fill='none' stroke='%233dd2ff' stroke-width='4'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.js",
+    "three/addons/": "./vendor/three/addons/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app">
+  <canvas id="game" aria-label="Shell Strikers 3D game"></canvas>
+  <div id="vignette"></div>
+  <div id="speed-lines"></div>
+  <div id="hit-flash"></div>
+  <div id="goal-flash"></div>
+
+  <div id="hud" class="hidden">
+    <header class="hud-top">
+      <div class="team-card blue">
+        <span class="team-badge">B</span>
+        <span class="team-name">BLUE</span>
+        <span class="score" id="score-blue">0</span>
+      </div>
+      <div class="clock-wrap">
+        <div class="clock" id="clock">3:00</div>
+        <div class="clock-label" id="clock-label">TIME</div>
+      </div>
+      <div class="team-card red">
+        <span class="score" id="score-red">0</span>
+        <span class="team-name">RED</span>
+        <span class="team-badge">R</span>
+      </div>
+    </header>
+
+    <div class="minimap-wrap">
+      <canvas id="minimap" width="200" height="290"></canvas>
+      <div class="minimap-label">RADAR</div>
+    </div>
+
+    <div class="boost-wrap">
+      <div class="boost-head"><span>BOOST</span><span id="boost-num">100</span></div>
+      <div class="boost-bar">
+        <div class="boost-fill" id="boost-fill"></div>
+        <div class="boost-ticks"></div>
+      </div>
+      <div class="speed-row"><span id="speed">0</span><span class="unit">KM/H</span></div>
+    </div>
+
+    <div class="item-wrap" id="item-wrap">
+      <div class="item-label">ITEM</div>
+      <div class="item-slot" id="item-slot">
+        <div class="item-icon" id="item-icon">?</div>
+        <div class="item-key">E</div>
+      </div>
+      <div class="item-name" id="item-name">EMPTY</div>
+    </div>
+
+    <div id="message" class="message">
+      <div class="message-main" id="message-main"></div>
+      <div class="message-sub" id="message-sub"></div>
+    </div>
+
+    <div id="power-tag" class="power-tag"></div>
+  </div>
+
+  <div id="touch-controls" class="hidden">
+    <div id="joystick" aria-label="Steering joystick">
+      <div class="joystick-ring"></div>
+      <div id="stick-knob"></div>
+    </div>
+    <button id="btn-boost" class="touch-btn boost" aria-label="Boost"><span class="boost-ring"></span><span class="boost-label">BOOST</span><span class="boost-num" id="touch-boost-num">50</span></button>
+    <button id="btn-jump" class="touch-btn jump" aria-label="Jump">JUMP</button>
+    <button id="btn-item" class="touch-btn item" aria-label="Use item"><span id="touch-item-icon">?</span></button>
+  </div>
+
+  <div id="menu" class="screen">
+    <div class="menu-shade"></div>
+    <div class="menu-inner">
+      <div class="kicker"><span class="dot"></span> 2V2 ROCKET SOCCER <span class="dot"></span> KART CHAOS</div>
+      <h1 class="logo"><span class="logo-line1">SHELL</span><span class="logo-line2">STRIKERS</span></h1>
+      <p class="tagline">Rocket-powered soccer. Banana peels. Homing shells. Zero chill.</p>
+      <div class="menu-actions">
+        <button id="play-btn" class="play-btn"><span class="play-icon">▶</span> PLAY NOW</button>
+        <button id="sound-btn" class="ghost-btn" aria-label="Toggle sound">SOUND: ON</button>
+      </div>
+      <div class="item-strip" aria-hidden="true">
+        <span title="Mushroom — speed burst">🍄</span>
+        <span title="Green Shell — bounce shot">🐢</span>
+        <span title="Red Shell — homing shot">🎯</span>
+        <span title="Banana — drop trap">🍌</span>
+        <span title="Star — invincibility">⭐</span>
+        <span title="Lightning — shrink rivals">⚡</span>
+        <span title="Bob-omb — blast zone">💣</span>
+      </div>
+      <div class="controls-grid">
+        <div class="control"><span class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span>Drive</span></div>
+        <div class="control"><span class="keys"><kbd>SPACE</kbd></span><span>Jump / Flip</span></div>
+        <div class="control"><span class="keys"><kbd>SHIFT</kbd></span><span>Boost</span></div>
+        <div class="control"><span class="keys"><kbd>E</kbd></span><span>Use item</span></div>
+        <div class="control"><span class="keys"><kbd>C</kbd></span><span>Ball cam</span></div>
+        <div class="control"><span class="keys"><kbd>ESC</kbd></span><span>Pause</span></div>
+      </div>
+      <div class="menu-foot">3 MINUTES · 2 VS 2 · SUDDEN-DEATH OVERTIME</div>
+    </div>
+  </div>
+
+  <div id="pause" class="screen hidden">
+    <div class="menu-shade"></div>
+    <div class="panel">
+      <div class="panel-kicker">MATCH PAUSED</div>
+      <h2>TAKE A BREATHER</h2>
+      <div class="panel-actions">
+        <button id="resume-btn" class="play-btn small">RESUME</button>
+        <button id="restart-btn" class="ghost-btn">RESTART MATCH</button>
+        <button id="quit-btn" class="ghost-btn">MAIN MENU</button>
+      </div>
+      <p class="panel-hint">Press <kbd>ESC</kbd> to jump back in.</p>
+    </div>
+  </div>
+
+  <div id="end" class="screen hidden">
+    <div class="menu-shade"></div>
+    <div class="panel end-panel">
+      <div class="panel-kicker" id="end-kicker">FULL TIME</div>
+      <h2 id="end-title">BLUE WINS</h2>
+      <div class="end-score"><span id="end-blue">0</span><span class="end-dash">—</span><span id="end-red">0</span></div>
+      <div class="panel-actions">
+        <button id="rematch-btn" class="play-btn small">REMATCH</button>
+        <button id="menu-btn" class="ghost-btn">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="loading">
+    <div class="loader-logo">SHELL<span>STRIKERS</span></div>
+    <div class="loader-bar"><div class="loader-fill"></div></div>
+    <div class="loader-text">WARMING UP THE TURBO…</div>
+  </div>
+</div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
